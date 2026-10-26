@@ -1,0 +1,505 @@
+/* ==========================================================================
+   Assignment #5: JavaScript Basics (DOM Manipulation & Events)
+   Student: Abay Amirzhanuly (IT-2510)
+   Course: Web Technologies 1 &bull; Fall 2026
+   ========================================================================== */
+
+:root {
+  --primary: #4F46E5;
+  --primary-hover: #4338CA;
+  --primary-light: #EEF2FF;
+  --secondary: #0F172A;
+  --accent: #F59E0B;
+  --success: #10B981;
+  --danger: #EF4444;
+  --info: #06B6D4;
+  --bg-page: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --border: #E2E8F0;
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 20px 35px -10px rgba(79, 70, 229, 0.15);
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  min-height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --------------------------------------------------------------------------
+   SHARED NAVBAR & FOOTER
+   -------------------------------------------------------------------------- */
+.assignment-nav {
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.assignment-nav .navbar-brand {
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: -0.02em;
+}
+
+.assignment-nav .nav-link {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  padding: 0.45rem 0.85rem !important;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+}
+
+.assignment-nav .nav-link:hover,
+.assignment-nav .nav-link.active {
+  color: var(--primary);
+  background-color: var(--primary-light);
+}
+
+.badge-student {
+  background-color: var(--primary-light);
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(79, 70, 229, 0.2);
+}
+
+.assignment-footer {
+  margin-top: auto;
+  background-color: #ffffff;
+  border-top: 1px solid var(--border);
+  padding: 1.5rem 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   TASK 1: TURN-BASED BATTLE ARENA (Option B)
+   -------------------------------------------------------------------------- */
+.battle-arena {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 2rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.fighter-card {
+  background: var(--bg-page);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  text-align: center;
+  position: relative;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.fighter-card.active-turn {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.fighter-card.hit-shake {
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.fighter-avatar {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  background: #ffffff;
+  box-shadow: var(--shadow-sm);
+  border: 2px solid var(--border);
+}
+
+.hp-bar-container {
+  height: 18px;
+  background-color: #E2E8F0;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 0.75rem 0 0.35rem;
+  position: relative;
+}
+
+.hp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10B981, #059669);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s;
+}
+
+.hp-bar-fill.warning {
+  background: linear-gradient(90deg, #F59E0B, #D97706);
+}
+
+.hp-bar-fill.critical {
+  background: linear-gradient(90deg, #EF4444, #B91C1C);
+}
+
+.action-buttons-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 2rem 0 1.5rem;
+}
+
+.btn-battle {
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.75rem 1.4rem;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.btn-attack {
+  background: var(--danger);
+  color: #ffffff;
+  border: none;
+}
+.btn-attack:hover:not(:disabled) {
+  background: #DC2626;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+}
+
+.btn-defend {
+  background: var(--primary);
+  color: #ffffff;
+  border: none;
+}
+.btn-defend:hover:not(:disabled) {
+  background: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
+}
+
+.btn-heal {
+  background: var(--success);
+  color: #ffffff;
+  border: none;
+}
+.btn-heal:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+
+.combat-log-card {
+  background: #F1F5F9;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.combat-log-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.combat-log-item {
+  padding: 0.5rem 0.85rem;
+  background: #ffffff;
+  border-radius: 8px;
+  border-left: 4px solid var(--primary);
+  font-size: 0.88rem;
+  line-height: 1.4;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.combat-log-item.crit {
+  border-left-color: var(--accent);
+  background: #FFFBEB;
+  font-weight: 600;
+}
+.combat-log-item.heal {
+  border-left-color: var(--success);
+}
+.combat-log-item.enemy {
+  border-left-color: var(--danger);
+}
+
+/* --------------------------------------------------------------------------
+   TASK 2: KANBAN BOARD (Option A - No innerHTML for data)
+   -------------------------------------------------------------------------- */
+.kanban-controls {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 2rem;
+}
+
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (max-width: 991.98px) {
+  .kanban-board {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kanban-column {
+  background: #F1F5F9;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+
+.column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #E2E8F0;
+}
+
+.column-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.column-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: #E2E8F0;
+  color: var(--text-main);
+}
+
+.kanban-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  flex-grow: 1;
+}
+
+.kanban-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: grab;
+}
+
+.kanban-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.card-priority {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+.priority-high {
+  background: #FEE2E2;
+  color: #DC2626;
+}
+.priority-medium {
+  background: #FEF3C7;
+  color: #D97706;
+}
+.priority-low {
+  background: #E0E7FF;
+  color: #4F46E5;
+}
+
+.card-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-page);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed var(--border);
+}
+
+.card-btn {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--text-main);
+  transition: all 0.15s ease;
+}
+
+.card-btn:hover {
+  background: var(--primary-light);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* --------------------------------------------------------------------------
+   TASK 3: TICKET BUILDER & LIVE PREVIEW (Option A)
+   -------------------------------------------------------------------------- */
+.ticket-builder-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 2.2rem;
+}
+
+.ticket-preview-box {
+  background: linear-gradient(135deg, #1E1B4B, #0F172A);
+  color: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.ticket-preview-box::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.ticket-stub {
+  border-top: 2px dashed rgba(255, 255, 255, 0.2);
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+}
+
+.ticket-barcode {
+  height: 38px;
+  background: repeating-linear-gradient(
+    90deg,
+    #ffffff 0px,
+    #ffffff 2px,
+    transparent 2px,
+    transparent 5px,
+    #ffffff 5px,
+    #ffffff 9px,
+    transparent 9px,
+    transparent 11px
+  );
+  opacity: 0.85;
+  border-radius: 4px;
+}
+
+.error-summary-banner {
+  background: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  border-left: 5px solid var(--danger);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1.25rem;
+  margin-bottom: 1.5rem;
+  color: #991B1B;
+  font-size: 0.9rem;
+}
+
+/* Accessible live validation feedback classes */
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: var(--danger);
+  background-color: #FFF5F5;
+}
+
+.form-control.is-valid,
+.form-select.is-valid {
+  border-color: var(--success);
+  background-color: #F0FDF4;
+}
+
+.field-error-msg {
+  display: none;
+  font-size: 0.82rem;
+  color: var(--danger);
+  margin-top: 0.3rem;
+  font-weight: 500;
+}
+
+.field-error-msg.visible {
+  display: block;
+}
+
+/* Testing Table Cards */
+.rules-matrix-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 1.75rem;
+  margin-top: 2.5rem;
+}
